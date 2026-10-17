@@ -1,0 +1,324 @@
+/* =====================================================================
+   Navigasi FMIPA Unimed — tema "graf kampus"
+   Palet : biru tinta (#12304f), biru langit (#2f6fed), kuning rute (#f5b301),
+           kertas (#f3f5f8), putih, abu tinta (#5b6b7e)
+   Font  : Plus Jakarta Sans
+   ===================================================================== */
+
+:root {
+    --ink: #12304f;
+    --ink-2: #1c4470;
+    --blue: #2f6fed;
+    --blue-dark: #1f56c4;
+    --blue-soft: #e8f0fe;
+    --route: #f5b301;
+    --green: #16a37f;
+    --paper: #f3f5f8;
+    --card: #ffffff;
+    --line: #dfe5ec;
+    --muted: #5b6b7e;
+    --text: #17283b;
+    --radius: 14px;
+    --shadow-sm: 0 1px 2px rgba(18, 48, 79, .08);
+    --shadow-md: 0 6px 18px rgba(18, 48, 79, .12);
+    --shadow-lg: 0 14px 34px rgba(18, 48, 79, .22);
+}
+
+html, body { height: 100%; }
+body {
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    color: var(--text);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Peta ---------- */
+#map { height: 100vh; width: 100%; z-index: 1; }
+.leaflet-container { background: #0b1626 !important; font-family: inherit; }
+#map3d { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; touch-action: none; }
+
+/* ---------- Sidebar ---------- */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 0 0 20px;
+    background: var(--paper);
+    box-shadow: 4px 0 28px rgba(18, 48, 79, .18);
+    max-height: 100vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #b8c4d2 transparent;
+}
+
+.brand {
+    position: relative;
+    padding: 22px 22px 20px;
+    color: #fff;
+    background-color: var(--ink);
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='120' viewBox='0 0 220 120' fill='none'%3E%3Cg stroke='%23ffffff' stroke-opacity='.16' stroke-width='1.5'%3E%3Cpath d='M20 90 L80 40 L140 70 L200 20'/%3E%3Cpath d='M80 40 L110 105 L140 70'/%3E%3C/g%3E%3Cg fill='%23f5b301' fill-opacity='.85'%3E%3Ccircle cx='80' cy='40' r='4'/%3E%3Ccircle cx='200' cy='20' r='4'/%3E%3C/g%3E%3Cg fill='%23ffffff' fill-opacity='.35'%3E%3Ccircle cx='20' cy='90' r='3'/%3E%3Ccircle cx='140' cy='70' r='3'/%3E%3Ccircle cx='110' cy='105' r='3'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right -10px top 0;
+    background-size: 220px 120px;
+}
+.brand::after {
+    content: "";
+    position: absolute; left: 0; right: 0; bottom: 0; height: 4px;
+    background: linear-gradient(90deg, var(--route) 0 34%, transparent 34%);
+}
+.brand-row { display: flex; align-items: center; gap: 12px; }
+.brand-logo {
+    flex: none;
+    width: 42px; height: 42px;
+    display: grid; place-items: center;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .22);
+}
+.brand-logo svg { width: 24px; height: 24px; }
+.brand h1 { margin: 0; font-size: 21px; line-height: 1.2; font-weight: 800; letter-spacing: -.01em; }
+.brand p { margin: 10px 0 0; font-size: 13px; line-height: 1.5; color: #c4d3e6; max-width: 30ch; }
+
+/* ---------- Kartu rute (dari / ke) ---------- */
+.panel { padding: 0 18px; display: flex; flex-direction: column; gap: 14px; }
+
+.route-card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 14px 14px 14px 46px;
+    box-shadow: var(--shadow-sm);
+}
+/* penanda titik + garis penghubung Dari -> Ke */
+.route-card::before {
+    content: "";
+    position: absolute; left: 16px; top: 17px;
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 4px solid var(--blue);
+    background: #fff;
+    box-sizing: border-box;
+}
+.route-card.is-end::before { border-color: var(--route); background: var(--route); box-shadow: 0 0 0 4px rgba(245, 179, 1, .22); }
+.route-card.is-start::after {
+    content: "";
+    position: absolute; left: 22px; top: 34px; bottom: -22px;
+    border-left: 2px dashed #b3c0d0;
+}
+.route-card.is-start { margin-bottom: -2px; }
+
+.field-label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--ink); }
+
+.field,
+.sidebar select,
+.sidebar input[type="search"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    font: 500 14px/1.3 inherit;
+    font-family: inherit;
+    color: var(--text);
+    background: #f7f9fc;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.sidebar select { appearance: none; -webkit-appearance: none; cursor: pointer; padding-right: 34px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b7e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+.sidebar select + select,
+.sidebar select + input[type="search"] { margin-top: 8px; }
+.sidebar #start-room, .sidebar #end-room,
+.sidebar #start-search, .sidebar #end-search { font-size: 13px; }
+.sidebar select:disabled { color: #8a97a8; cursor: not-allowed; background-color: #eef1f5; }
+.sidebar select:hover, .sidebar input[type="search"]:hover { border-color: #b3c0d0; }
+.sidebar select:focus, .sidebar input[type="search"]:focus {
+    background-color: #fff;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(47, 111, 237, .16);
+}
+.sidebar input[type="search"]::placeholder { color: #8a97a8; }
+
+/* ---------- Tombol cari ---------- */
+.btn-primary {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%;
+    padding: 14px 16px;
+    font: 800 15px/1 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: #fff;
+    background: var(--blue);
+    border: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 6px 16px rgba(47, 111, 237, .38);
+    transition: background .15s, transform .12s, box-shadow .15s;
+}
+.btn-primary svg { width: 18px; height: 18px; }
+.btn-primary:hover { background: var(--blue-dark); box-shadow: 0 8px 20px rgba(47, 111, 237, .45); }
+.btn-primary:active { transform: translateY(1px) scale(.99); }
+
+/* ---------- Hasil rute ---------- */
+#result-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-md);
+    animation: hasil-muncul .28s ease-out;
+}
+#result-panel.hidden { display: none; }
+#result-panel h3 { margin: 0 0 10px; font-size: 13px; font-weight: 700; color: var(--muted); }
+#result-distance {
+    margin: 0 0 4px;
+    font-size: 21px; line-height: 1.25; font-weight: 800; letter-spacing: -.01em;
+    color: var(--ink);
+}
+#result-detail { margin: 0 0 14px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+#result-detail:empty { display: none; }
+
+#result-path {
+    list-style: none;
+    margin: 0; padding: 14px 0 0;
+    border-top: 1px solid var(--line);
+    counter-reset: langkah;
+    font-size: 13.5px;
+}
+#result-path li {
+    position: relative;
+    counter-increment: langkah;
+    padding: 0 0 14px 34px;
+    line-height: 1.45;
+    color: var(--text);
+}
+#result-path li:last-child { padding-bottom: 0; }
+#result-path li::before {
+    content: counter(langkah);
+    position: absolute; left: 0; top: -1px;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 800;
+    color: var(--blue); background: var(--blue-soft);
+    border: 1px solid #bcd0fb;
+    box-sizing: border-box;
+    z-index: 1;
+}
+#result-path li:not(:last-child)::after {
+    content: "";
+    position: absolute; left: 10.5px; top: 22px; bottom: 0;
+    border-left: 2px dashed #c3cfdd;
+}
+#result-path li:first-child::before { color: #fff; background: var(--blue); border-color: var(--blue); }
+#result-path li:last-child::before { color: #3b2d00; background: var(--route); border-color: var(--route); }
+
+@keyframes hasil-muncul { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ---------- Tombol pengalih tampilan (2D/3D, lantai, kamera) ---------- */
+.view-toggle {
+    position: absolute; top: 12px; right: 12px; z-index: 1000;
+    display: flex; padding: 4px; gap: 4px;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+}
+.view-btn {
+    padding: 8px 14px;
+    font: 700 13px/1 'Plus Jakarta Sans', system-ui, sans-serif;
+    color: var(--ink);
+    background: rgba(255, 255, 255, .94);
+    border: 1px solid #d3dbe5;
+    border-radius: 9px;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background .15s, color .15s, border-color .15s;
+}
+.view-toggle .view-btn { background: transparent; border-color: transparent; box-shadow: none; }
+.view-btn:hover { background: var(--blue-soft); }
+.view-btn[data-aktif="1"],
+.view-toggle .view-btn[data-aktif="1"] {
+    background: var(--blue); color: #fff; border-color: var(--blue);
+    box-shadow: 0 3px 10px rgba(47, 111, 237, .4);
+}
+
+#kontrol-3d { flex-direction: column; gap: 8px; }
+#kontrol-3d .hint {
+    max-width: 330px;
+    padding: 9px 12px;
+    font-size: 11.5px; line-height: 1.55; color: #33465b;
+    background: rgba(255, 255, 255, .92);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    box-shadow: var(--shadow-md);
+}
+
+/* ---------- Popup & kontrol Leaflet ---------- */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    font-family: inherit;
+}
+.leaflet-popup-content { margin: 12px 16px; font-size: 14px; line-height: 1.45; color: var(--text); }
+.leaflet-popup-content b { color: var(--ink); font-weight: 800; }
+.leaflet-bar { border: 0 !important; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-lg) !important; }
+.leaflet-bar a { color: var(--ink); border-bottom-color: var(--line) !important; }
+.leaflet-bar a:hover { background: var(--blue-soft); }
+
+/* ---------- Panel "Ambil Koordinat" (alat bantu developer) ---------- */
+body #picker-panel {
+    border: 0;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    backdrop-filter: blur(10px);
+}
+body #picker-panel .pk-head { background: var(--ink); border-radius: 14px 14px 0 0; }
+body #picker-panel button { border-radius: 8px; font-family: inherit; }
+body #picker-panel button.pk-utama { background: var(--blue); border-color: var(--blue); }
+body #picker-panel button.pk-utama:hover { background: var(--blue-dark); }
+
+/* ---------- Fokus keyboard & aksesibilitas ---------- */
+.btn-primary:focus-visible,
+.view-btn:focus-visible { outline: 3px solid rgba(47, 111, 237, .45); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+    #result-panel { animation: none; }
+    * { transition: none !important; }
+}
+
+/* ---------- Responsif ---------- */
+@media (max-width: 767px) {
+    .sidebar { max-height: 52vh; box-shadow: 0 4px 20px rgba(18, 48, 79, .2); }
+    .brand { padding: 16px 18px 16px; }
+    .brand p { display: none; }
+    .brand h1 { font-size: 18px; }
+    #map { height: 100%; }
+}
+
+/* ---------- Foto gedung ---------- */
+#foto-rute { display: grid; gap: 10px; margin: 0 0 14px; }
+#foto-rute:empty { display: none; }
+.foto-kartu { position: relative; margin: 0; overflow: hidden; border-radius: 12px; background: var(--ink); box-shadow: var(--shadow-sm); }
+.foto-kartu img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; object-position: center 30%; cursor: zoom-in; transition: transform .25s; }
+.foto-kartu img:hover { transform: scale(1.03); }
+.foto-kartu.foto-awal img { aspect-ratio: 21 / 9; }
+.foto-kartu figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    display: flex; flex-direction: column; gap: 1px;
+    padding: 22px 12px 9px;
+    color: #fff; font-size: 14px; line-height: 1.25;
+    background: linear-gradient(to top, rgba(10, 24, 40, .85), transparent);
+    pointer-events: none;
+}
+.foto-kartu figcaption span { font-size: 11px; font-weight: 600; color: #ffd466; }
+.foto-kartu.foto-awal figcaption span { color: #bcd0fb; }
+.popup-foto { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; margin: 0 0 8px; }
+.foto-lightbox {
+    position: fixed; inset: 0; z-index: 5000;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+    padding: 20px; background: rgba(8, 18, 32, .86); cursor: zoom-out;
+}
+.foto-lightbox img { max-width: min(92vw, 1000px); max-height: 80vh; border-radius: 12px; box-shadow: var(--shadow-lg); }
+.foto-lightbox p { margin: 0; color: #fff; font-weight: 700; }
